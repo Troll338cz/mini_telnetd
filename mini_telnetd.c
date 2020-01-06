@@ -39,11 +39,11 @@
 #include <sys/syslog.h>
 
 #define BUFSIZE 4000
-#define DEFAULT_SHELL "/bin/sh"
+#define DEFAULT_SHELL "/bin/login"
 #define SOCKET_TYPE	AF_INET
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y)) 
 typedef struct sockaddr_in sockaddr_type;
-static const char *loginpath = "/bin/sh";
+static const char *loginpath = "/bin/login";
 
 
 /* shell name and arguments */
