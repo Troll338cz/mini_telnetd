@@ -1,4 +1,4 @@
-# minitelnetd
+# mini_telnetd
 Minimal telnet server based off busybox implementation
 
 Arguments 
