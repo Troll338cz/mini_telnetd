@@ -1,5 +1,5 @@
 # mini_telnetd
-Minimal telnet server based off busybox implementation
+Minimal telnet server based off busybox implementation (https://busybox.net)
 
 Arguments 
 -p Port (Default: 23)
