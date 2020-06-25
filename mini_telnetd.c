@@ -19,6 +19,12 @@
  *
  * Vladimir Oleynik <dzo@simtreas.ru> 2001
  *     Set process group corrections, initial busybox port
+ *
+ * BusyBox is distributed under version 2 of the General Public License (included
+ * in its entirety, below).  Version 2 is the only version of this license which
+ * this version of BusyBox (or modified versions derived from this one) may be
+ * distributed under.
+ * https://busybox.net/downloads/busybox-0.60.5.tar.bz2
  */
 
 #include <sys/time.h>
