@@ -49,6 +49,7 @@
 #define DEFAULT_SHELL "/bin/login"
 #define SOCKET_TYPE	AF_INET
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y)) 
+enum { GETPTY_BUFSIZE = 16 };
 typedef struct sockaddr_in sockaddr_type;
 static const char *loginpath = "/bin/login";
 
@@ -112,8 +113,7 @@ static struct tsession *sessions;
    CR-LF ->'s CR mapping is also done here, for convenience
 
   */
-static char *
-remove_iacs(struct tsession *ts, int *pnum_totty) {
+static char *remove_iacs(struct tsession *ts, int *pnum_totty) {
 	unsigned char *ptr0 = ts->buf1 + ts->wridx1;
 	unsigned char *ptr = ptr0;
 	unsigned char *totty = ptr;
@@ -176,23 +176,44 @@ remove_iacs(struct tsession *ts, int *pnum_totty) {
 }
 
 
-static int
-getpty(char *line)
+static int getpty(char *line)
 {
-	int p;
-	p = open("/dev/ptmx", 2);
-	if (p > 0) {
-		grantpt(p);
-		unlockpt(p);
-		strcpy(line, ptsname(p));
-		return(p);
-	}
-	return -1;
+        int p;
+        p = open("/dev/ptmx", O_RDWR);
+        if (p >= 0) {
+                grantpt(p);
+                unlockpt(p); 
+                if (ptsname_r(p, line, GETPTY_BUFSIZE-1) != 0) {
+                        syslog(LOG_ERR, "ptsname error (is /dev/pts mounted?)");
+			exit(1);
+                }
+                line[GETPTY_BUFSIZE-1] = '\0';
+                return p;
+        }
+        struct stat stb;
+        int i;
+        int j;
+
+        strcpy(line, "/dev/ptyXX");
+
+        for (i = 0; i < 16; i++) {
+                line[8] = "pqrstuvwxyzabcde"[i];
+                line[9] = '0';
+                if (stat(line, &stb) < 0) {
+                        continue;
+                }
+                for (j = 0; j < 16; j++) {
+                        line[9] = j < 10 ? j + '0' : j - 10 + 'a';
+                        p = open(line, O_RDWR | O_NOCTTY);
+                        if (p >= 0) {
+                                line[5] = 't';
+                                return p;
+                        }
+                }
+        }
 }
 
-
-static void
-send_iac(struct tsession *ts, unsigned char command, int option)
+static void send_iac(struct tsession *ts, unsigned char command, int option)
 {
 	/* We rely on that there is space in the buffer for now.  */
 	char *b = ts->buf2 + ts->rdidx2;
@@ -204,8 +225,7 @@ send_iac(struct tsession *ts, unsigned char command, int option)
 }
 
 
-static struct tsession *
-make_new_session(int sockfd)
+static struct tsession *make_new_session(int sockfd)
 {
 	struct termios termbuf;
 	int pty, pid;
@@ -292,8 +312,7 @@ make_new_session(int sockfd)
 	return ts;
 }
 
-static void
-free_session(struct tsession *ts)
+static void free_session(struct tsession *ts)
 {
 	struct tsession *t = sessions;
 
@@ -321,8 +340,7 @@ free_session(struct tsession *ts)
 	free(ts);
 }
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
         sockaddr_type sa;
 	int master_fd;
