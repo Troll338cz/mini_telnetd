@@ -178,6 +178,18 @@ static char *remove_iacs(struct tsession *ts, int *pnum_totty) {
 
 static int getpty(char *line)
 {
+#ifdef OLD_GETPTY 
+	int p;
+	p = open("/dev/ptmx", 2);
+	if (p > 0) {
+		grantpt(p);
+		unlockpt(p);
+		strcpy(line, ptsname(p));
+		return(p);
+	}
+	return -1;
+#else
+
         int p;
         p = open("/dev/ptmx", O_RDWR);
         if (p >= 0) {
@@ -211,6 +223,7 @@ static int getpty(char *line)
                         }
                 }
         }
+#endif
 }
 
 static void send_iac(struct tsession *ts, unsigned char command, int option)
