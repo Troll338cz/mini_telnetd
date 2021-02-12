@@ -7,6 +7,7 @@ all: $(TARGET)
 CFLAGS = -O2 -Wall
 # Static compile
 #CFLAGS = -O2 -Wall -static -static-libgcc
+#CFLAGS = -O2 -Wall -DOLD_GETPTY=true
 
 LDFLAGS=
 OBJS = mini_telnetd.o
