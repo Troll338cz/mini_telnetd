@@ -46,7 +46,6 @@
 #include <sys/syslog.h>
 
 #define BUFSIZE 4000
-#define DEFAULT_SHELL "/bin/login"
 #define SOCKET_TYPE	AF_INET
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y)) 
 enum { GETPTY_BUFSIZE = 16 };
@@ -364,10 +363,6 @@ int main(int argc, char **argv)
 	int c;
 	static const char options[] = "l:p:";
 	int maxlen, w, r;
-
-#ifndef CONFIG_LOGIN
-	loginpath = DEFAULT_SHELL;
-#endif
 
 	for (;;) {
 		c = getopt( argc, argv, options);
