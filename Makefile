@@ -7,6 +7,7 @@ all: $(TARGET)
 CFLAGS = -O2 -Wall
 # Static compile
 #CFLAGS = -O2 -Wall -static -static-libgcc
+# Use for older systems 
 #CFLAGS = -O2 -Wall -DOLD_GETPTY=true
 
 LDFLAGS=
