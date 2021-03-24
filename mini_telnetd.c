@@ -375,12 +375,12 @@ int main(int argc, char **argv)
 				portnbr = atoi(optarg);
 				break;
 			default:
-				printf("Usage:\n -p Port \n -l Path to login binary ");
+				printf("Usage:\n -p Port \n -l Path to login binary\n");
 		}
 	}
 
 	if (access(loginpath, X_OK) < 0) {
-		printf("'%s' unavailable.", loginpath);
+		printf("'%s' unavailable.\n", loginpath);
 	}
 
 	argv_init[0] = loginpath;
@@ -391,7 +391,7 @@ int main(int argc, char **argv)
 
         master_fd = socket(SOCKET_TYPE, SOCK_STREAM, 0);
 	if (master_fd < 0) {
-		printf("socket");
+		printf("socket\n");
 	}
 	(void)setsockopt(master_fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
@@ -403,15 +403,15 @@ int main(int argc, char **argv)
 
 
 	if (bind(master_fd, (struct sockaddr *) &sa, sizeof(sa)) < 0) {
-		printf("bind");
+		printf("bind\n");
 	}
 
 	if (listen(master_fd, 1) < 0) {
-		printf("listen");
+		printf("listen\n");
 	}
 
 	if (daemon(0, 0) < 0)
-		printf("daemon");
+		printf("daemon\n");
 
 
 	maxfd = master_fd;
