@@ -2,7 +2,7 @@
  * Simple telnet server
  * Bjorn Wesen, Axis Communications AB (bjornw@axis.com)
  *
- * This file is distributed under the Gnu Public License (GPL),
+ * This file is distributed under the GNU Public License (GPL),
  * please see the file LICENSE for further information.
  *
  * ---------------------------------------------------------------------------
@@ -87,7 +87,6 @@ struct tsession {
 */
 
 static int maxfd;
-
 static struct tsession *sessions;
 
 
@@ -237,6 +236,13 @@ static void send_iac(struct tsession *ts, unsigned char command, int option)
 }
 
 
+
+void errexit(const char *s, ...)
+{
+	fprintf( stderr, s );
+	exit( EXIT_FAILURE );
+}
+
 static struct tsession *make_new_session(int sockfd)
 {
 	struct termios termbuf;
@@ -361,7 +367,7 @@ int main(int argc, char **argv)
 	int on = 1;
 	int portnbr = 23;
 	int c;
-	static const char options[] = "l:p:";
+	static const char options[] = "l:p:h";
 	int maxlen, w, r;
 
 	for (;;) {
@@ -374,44 +380,42 @@ int main(int argc, char **argv)
 			case 'p':
 				portnbr = atoi(optarg);
 				break;
+			case 'h':
 			default:
-				printf("Usage:\n -p Port \n -l Path to login binary\n");
+				errexit( "Usage:\n -p Port \n -l Path to login binary\n");
 		}
 	}
 
 	if (access(loginpath, X_OK) < 0) {
-		printf("'%s' unavailable.\n", loginpath);
+		errexit( "Binary '%s' unavailable.\n", loginpath);
 	}
 
 	argv_init[0] = loginpath;
-
 	sessions = 0;
 
 	/* Grab a TCP socket.  */
-
         master_fd = socket(SOCKET_TYPE, SOCK_STREAM, 0);
 	if (master_fd < 0) {
-		printf("socket\n");
+		errexit( "Unable to create socket\n");
 	}
 	(void)setsockopt(master_fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
 	/* Set it to listen to specified port.  */
-
 	memset((void *)&sa, 0, sizeof(sa));
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(portnbr);
 
 
 	if (bind(master_fd, (struct sockaddr *) &sa, sizeof(sa)) < 0) {
-		printf("bind\n");
+		errexit( "Failed to bind socket\n");
 	}
 
 	if (listen(master_fd, 1) < 0) {
-		printf("listen\n");
+		errexit( "Socket failed to listen\n");
 	}
 
 	if (daemon(0, 0) < 0)
-		printf("daemon\n");
+		errexit( "Unable to daemonize\n");
 
 
 	maxfd = master_fd;
@@ -476,7 +480,6 @@ int main(int argc, char **argv)
 		}
 
 		/* Then check for data tunneling.  */
-
 		ts = sessions;
 		while (ts) { /* For all sessions...  */
 		struct tsession *next = ts->next; /* in case we free ts. */
@@ -499,7 +502,6 @@ int main(int argc, char **argv)
 				if (ts->wridx1 == BUFSIZE)
 					ts->wridx1 = 0;
 			}
-
 
 			if (ts->size2 && FD_ISSET(ts->sockfd, &wrfdset)) {
 				/* Write to socket from buffer 2.  */
@@ -536,9 +538,6 @@ int main(int argc, char **argv)
 				if (ts->rdidx1 == BUFSIZE)
 					ts->rdidx1 = 0;
 			}
-
-
-
 
 			if (ts->size2 < BUFSIZE && FD_ISSET(ts->ptyfd, &rdfdset)) {
 				/* Read from pty to buffer 2.  */
